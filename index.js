@@ -207,16 +207,17 @@ bot.command("status", async (ctx) => {
 
 bot.action("register_request", async (ctx) => {
   const from = ctx.from;
-  const user = updateUser(from.id, {
+
+  updateUser(from.id, {
     requested: true,
+    waitingForGameId: true,
     first_name: from.first_name || "",
     username: from.username || ""
   });
 
-  await ctx.answerCbQuery("Registration request sent");
-  await ctx.editMessageReplyMarkup(mainMenu(from.id).reply_markup).catch(() => {});
-  await ctx.reply("Your request has been sent to admin. Wait for approval.");
-
+  await ctx.answerCbQuery();
+  await ctx.reply("📩 Please send your GAME ID (only text).");
+});
   try {
     await bot.telegram.sendMessage(
       ADMIN_ID,
