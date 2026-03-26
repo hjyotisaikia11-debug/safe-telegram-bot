@@ -6,6 +6,7 @@ require("dotenv").config();
 const { Telegraf, Markup } = require("telegraf");
 
 const BOT_TOKEN = process.env.BOT_TOKEN;
+const TIME_ZONE = process.env.TIME_ZONE || "Asia/Kolkata";
 const ADMIN_ID = String(process.env.ADMIN_ID || "");
 const GAME_LINK = process.env.GAME_LINK || "https://example.com/register";
 const BOT_NAME = process.env.BOT_NAME || "Safe Alert Bot";
@@ -149,10 +150,17 @@ async function sendMinuteAlerts() {
 
   if (users.length === 0) return;
 
-  const now = new Date();
-  const hh = String(now.getHours()).padStart(2, "0");
-  const mm = String(now.getMinutes()).padStart(2, "0");
+const now = new Date();
 
+const timeParts = new Intl.DateTimeFormat("en-GB", {
+  timeZone: TIME_ZONE,
+  hour: "2-digit",
+  minute: "2-digit",
+  hour12: false
+}).formatToParts(now);
+
+const hh = timeParts.find(p => p.type === "hour")?.value || "00";
+const mm = timeParts.find(p => p.type === "minute")?.value || "00";
   const message =
     `⏰ Minute Update\n\n` +
     `Time: ${hh}:${mm}\n` +
@@ -169,7 +177,11 @@ async function sendMinuteAlerts() {
 
 function scheduleNextMinuteTick() {
   const now = new Date();
-  const delay = (60 - now.getSeconds()) * 1000 - now.getMilliseconds();
+  const nextMinute = new Date(now);
+  nextMinute.setSeconds(0, 0);
+  nextMinute.setMinutes(now.getMinutes() + 1);
+
+  const delay = nextMinute.getTime() - now.getTime();
 
   setTimeout(async () => {
     try {
