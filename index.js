@@ -151,6 +151,7 @@ async function sendMinuteAlerts() {
   if (users.length === 0) return;
 
 const now = new Date();
+now.setMinutes(now.getMinutes() + 1);
 
 const timeParts = new Intl.DateTimeFormat("en-GB", {
   timeZone: TIME_ZONE,
