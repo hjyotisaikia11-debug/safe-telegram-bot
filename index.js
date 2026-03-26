@@ -48,15 +48,17 @@ let db = loadData();
 function getUser(userId) {
   const id = String(userId);
   if (!db.users[id]) {
-    db.users[id] = {
-      id,
-      approved: false,
-      requested: false,
-      alertsOn: false,
-      first_name: "",
-      username: "",
-      joinedAt: new Date().toISOString()
-    };
+db.users[id] = {
+  id,
+  approved: false,
+  requested: false,
+  alertsOn: false,
+  waitingForGameId: false,
+  gameId: "",
+  first_name: "",
+  username: "",
+  joinedAt: new Date().toISOString()
+};
     saveData(db);
   }
   return db.users[id];
@@ -218,14 +220,34 @@ bot.action("register_request", async (ctx) => {
   await ctx.answerCbQuery();
   await ctx.reply("📩 Please send your GAME ID (only text).");
 });
+
+bot.on("text", async (ctx) => {
+  const user = getUser(ctx.from.id);
+
+  if (!user.waitingForGameId) return;
+
+  const gameId = ctx.message.text;
+
+  updateUser(ctx.from.id, {
+    gameId: gameId,
+    waitingForGameId: false
+  });
+
+  await ctx.reply("✅ Your Game ID has been sent to admin. Wait for approval.");
+
   try {
     await bot.telegram.sendMessage(
-      ADMIN_ID,
-      `📩 New registration request\n\nUser: ${formatUserLabel(from)}\nRequested: Yes\nLink: ${GAME_LINK}`,
-      adminDecisionKeyboard(user.id)
-    );
+  ADMIN_ID,
+  `📩 New Verification Request\n\nUser: ${ctx.from.first_name}\nUsername: @${ctx.from.username || "N/A"}\nID: ${ctx.from.id}\nGame ID: ${gameId}`,
+  Markup.inlineKeyboard([
+    [
+      Markup.button.callback("Approve", `admin_approve_${ctx.from.id}`),
+      Markup.button.callback("Reject", `admin_reject_${ctx.from.id}`)
+    ]
+  ])
+);
   } catch (err) {
-    console.error("Failed to notify admin:", err.message);
+    console.error("Admin send error:", err.message);
   }
 });
 
