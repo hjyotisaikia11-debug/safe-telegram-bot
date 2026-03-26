@@ -1,7 +1,7 @@
 {
-  "name": "safe-telegram-bot",
+  "name": "telegram-minute-alert-bot",
   "version": "1.0.0",
-  "description": "Telegram bot with admin verification and 1-minute auto alerts",
+  "description": "Railway deploy-ready Telegram alert bot",
   "main": "index.js",
   "type": "commonjs",
   "scripts": {
@@ -9,6 +9,7 @@
   },
   "dependencies": {
     "dotenv": "^16.4.5",
+    "express": "^4.21.2",
     "telegraf": "^4.16.3"
   }
 }
